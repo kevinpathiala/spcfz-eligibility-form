@@ -2478,7 +2478,7 @@ const submitToHubSpot = async (data, result) => {
     { objectTypeId: '0-1', name: map.revenue, value: String(data.revenue) },
     { objectTypeId: '0-1', name: map.loanAmount, value: String(data.loanAmount) },
     { objectTypeId: '0-1', name: map.qualified, value: result.qualified ? 'Eligible' : 'Not eligible' },
-    { objectTypeId: '0-1', name: 'hs_lead_source', value: (window.beehiveUtms && window.beehiveUtms.utm_source) ? `Beehive Partnership - ${window.beehiveUtms.utm_source}` : 'Beehive Partnership' },
+    { objectTypeId: '0-1', name: 'lead_source', value: 'Introducer' },
     // Company object — the form has a required "Company name" field (0-2/name)
     { objectTypeId: '0-2', name: 'name', value: data.businessName },
   ];
