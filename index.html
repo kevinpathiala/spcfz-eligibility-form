@@ -2214,7 +2214,7 @@ const StepAge = ({ data, set, next }) => (
     <p className="q-sub">Pick the range that fits. We'll get to specifics later.</p>
     <OptionGroup
       autoAdvance
-      onAutoAdvance={next}
+      onAutoAdvance={() => { window.trackEvent && window.trackEvent('form_step_complete', { step: 'age', step_label: (window.STEP_LABELS && window.STEP_LABELS.age) || 'business_age' }); next(); }}
       value={data.businessAge}
       onChange={(v) => set({ businessAge: v })}
       options={[
