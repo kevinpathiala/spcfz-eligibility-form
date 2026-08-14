@@ -2479,6 +2479,7 @@ const submitToHubSpot = async (data, result) => {
     { objectTypeId: '0-1', name: map.loanAmount, value: String(data.loanAmount) },
     { objectTypeId: '0-1', name: map.qualified, value: result.qualified ? 'Eligible' : 'Not eligible' },
     { objectTypeId: '0-1', name: 'lead_source', value: 'Marketing Inbound' },
+    { objectTypeId: '0-1', name: 'marketing_origin', value: 'Online Eligibility Calculator' },
     // Company object — the form has a required "Company name" field (0-2/name)
     { objectTypeId: '0-2', name: 'name', value: data.businessName },
   ];
