@@ -254,6 +254,8 @@
     margin: 0 0 32px;
     text-wrap: pretty;
   }
+  .reassurance-note{color:var(--text-muted);font-size:17px;line-height:1.5;margin:16px 0 0;text-wrap:pretty}
+  .reassurance-note--footer{margin:14px 0 0;text-align:center;font-size:14px}
 
   /* Card-style options */
   .options {
@@ -1985,9 +1987,12 @@ const Slider = ({
   caption,
   format = (v) => v.toLocaleString(),
   formatBound,
+  scale,
 }) => {
   const clampedValue = Math.max(min, Math.min(max, value));
-  const pct = ((clampedValue - min) / (max - min)) * 100;
+  const pct = scale
+    ? (scale.toPos(clampedValue) / scale.maxPos) * 100
+    : ((clampedValue - min) / (max - min)) * 100;
   const fmtBound = formatBound || ((v) => `${prefix}${format(v)}${suffix}`);
   return (
     <div className="slider-wrap">
@@ -1999,11 +2004,11 @@ const Slider = ({
       {caption && <div className="slider-caption">{caption}</div>}
       <input
         type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={clampedValue}
-        onChange={(e) => onChange(Number(e.target.value))}
+        min={scale ? 0 : min}
+        max={scale ? scale.maxPos : max}
+        step={scale ? 1 : step}
+        value={scale ? scale.toPos(clampedValue) : clampedValue}
+        onChange={(e) => onChange(scale ? scale.fromPos(Number(e.target.value)) : Number(e.target.value))}
       />
       <div className="slider-track-fill" style={{ width: `calc(${pct}% - ${pct * 0.28}px)` }} />
       <div className="slider-bounds">
@@ -2296,26 +2301,37 @@ const StepRevenue = ({ data, set }) => {
   const ccy = ccyOf(data);
   const fx = fxOf(data);
   // Stored in AED-equivalent (annual)
-  const maxAED = 10_000_000;
-  const stepAED = 100_000;
+  const maxAED = 50_000_000;
+  const stepAED = 250_000;
+  // Variable-speed scale: 0–2M in 50K, 2M–10M in 250K, 10M–50M in 1M steps
+  const revenueScale = {
+    maxPos: 112,
+    toPos: (v) => v <= 2_000_000 ? Math.round(v / 50_000)
+      : v <= 10_000_000 ? 40 + Math.round((v - 2_000_000) / 250_000)
+      : 72 + Math.round((v - 10_000_000) / 1_000_000),
+    fromPos: (p) => p <= 40 ? p * 50_000
+      : p <= 72 ? 2_000_000 + (p - 40) * 250_000
+      : 10_000_000 + (p - 72) * 1_000_000,
+  };
   return (
     <>
       <div className="eyebrow"><span className="eyebrow-dot" />Trading volume</div>
       <h1 className="q-title">What is your average annual revenue?</h1>
-      <p className="q-sub">A rough figure is fine. Drag the slider to your typical year.</p>
+      <p className="q-sub"><strong>A rough figure is fine.</strong> Drag the slider to your typical year.</p>
       <Slider
         min={0}
         max={maxAED}
         step={stepAED}
+        scale={revenueScale}
         value={data.revenue}
         onChange={(v) => set({ revenue: v, revenueTouched: true })}
         prefix={`${ccy.symbol} `}
-        format={(v) => formatAED(v * fx)}
+        format={(v) => v >= maxAED ? `${formatAED(v * fx)}+` : formatAED(v * fx)}
         formatBound={(v) => v === maxAED ? `${ccy.symbol} ${formatAED(maxAED * fx)}+` : `${ccy.symbol} ${formatAED(v * fx)}`}
         caption="Drag to set your annual revenue"
       />
       <div className="chips">
-        {[2_000_000, 5_000_000, 10_000_000].map((v) => (
+        {[2_000_000, 5_000_000, 10_000_000, 25_000_000, 50_000_000].map((v) => (
           <button key={v} type="button" className={`chip ${data.revenueTouched && data.revenue === v ? 'active' : ''}`} onClick={() => set({ revenue: v, revenueTouched: true })}>{`${ccy.symbol} ${formatAED(v * fx)}${v === maxAED ? '+' : ''}`}</button>
         ))}
       </div>
@@ -2433,10 +2449,25 @@ const qualifyLead = (data) => {
   if (['<6', '6-12', '1-2'].includes(data.businessAge)) return { qualified: false, reason: 'age' };
   // Annual revenue must be at least 2M AED
   if (data.revenue < 2_000_000) return { qualified: false, reason: 'revenue' };
+  // We don't lend to tobacco/sheesha businesses
+  if (data.industry === 'TOBACCO') return { qualified: false, reason: 'industry' };
   return { qualified: true };
 };
 
 // ============================================================================
+// Digit length rules per country code
+const PHONE_RULES = {
+  '+971': { length: 9 },
+  '+968': { length: 8 },
+  '+966': { length: 9 },
+};
+const isValidPhone = (code, phone) => {
+  const digits = (phone || '').replace(/\D/g, '');
+  const rule = PHONE_RULES[code];
+  if (!rule) return digits.length >= 7 && digits.length <= 12;
+  return digits.length === rule.length;
+};
+
 // Validation
 // ============================================================================
 const validateContact = (data) => {
@@ -2444,7 +2475,7 @@ const validateContact = (data) => {
   if (!data.name || data.name.trim().length < 2) e.name = 'Please enter your name';
   if (!data.businessName || data.businessName.trim().length < 2) e.businessName = 'Please enter your business name';
   if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) e.email = 'Enter a valid email';
-  if (!data.phone || data.phone.replace(/\s/g, '').length < 6) e.phone = 'Enter a valid mobile number';
+  if (!isValidPhone(data.phoneCode, data.phone)) e.phone = 'Enter a valid mobile number';
   if (!data.terms) e.terms = 'Please accept the Terms and Privacy Policy to continue';
   return e;
 };
@@ -2457,7 +2488,7 @@ const validateContactA = (data) => {
 const validateContactB = (data) => {
   const e = {};
   if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) e.email = 'Enter a valid email';
-  if (!data.phone || data.phone.replace(/\s/g, '').length < 6) e.phone = 'Enter a valid mobile number';
+  if (!isValidPhone(data.phoneCode, data.phone)) e.phone = 'Enter a valid mobile number';
   if (!data.terms) e.terms = 'Please accept the Terms and Privacy Policy to continue';
   return e;
 };
@@ -2761,6 +2792,8 @@ const App = () => {
                 {submitting ? <><span className="spinner" /> Sending...</> : ((current.id === 'contact' && contactPage === 1) ? 'Get My Eligibility' : 'Continue')}
               </button>
             </div>
+            {(current.id === 'revenue' || current.id === 'loan') && <p className="reassurance-note reassurance-note--footer">Only used to check your eligibility. Never shared.</p>}
+            {current.id === 'contact' && <p className="reassurance-note reassurance-note--footer">We won't spam you, just a contact to discuss your funding eligibility.</p>}
           </div>
         </div>
       )}
