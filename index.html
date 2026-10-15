@@ -1108,7 +1108,7 @@
     flex-direction: column;
     overflow: hidden;
   }
-  #beehive-form .stage.is-done { min-height: 100vh; justify-content: center; }
+  #beehive-form .stage.is-done { min-height: 600px; box-sizing: border-box; justify-content: center; }
   #beehive-form .stage.is-done > .main { flex: 0 0 auto; }
   .card-head { margin-bottom: 16px; }
   .card-head h2 {
@@ -2903,8 +2903,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 (function reportHeight() {
   var last = 0;
   const measure = () => {
-    const b = document.body, d = document.documentElement;
-    return Math.ceil(Math.max(b.scrollHeight, b.offsetHeight, d.scrollHeight, d.offsetHeight));
+    const el = document.getElementById('beehive-form');
+    if (el) return Math.ceil(el.getBoundingClientRect().height);
+    const b = document.body;
+    return Math.ceil(Math.max(b.scrollHeight, b.offsetHeight));
   };
   const send = () => {
     const h = measure();
