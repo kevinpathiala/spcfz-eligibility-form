@@ -2534,7 +2534,7 @@ const submitToHubSpot = async (data, result) => {
     { objectTypeId: '0-1', name: map.qualified, value: result.qualified ? 'Eligible' : 'Not eligible' },
     { objectTypeId: '0-1', name: 'lead_source', value: 'Marketing Inbound' },
     { objectTypeId: '0-1', name: 'marketing_origin', value: 'SPCFZ Landing Page' },
-    { objectTypeId: '0-1', name: 'manual_email_optout', value: data.marketingOptIn ? 'true' : 'false' },
+    { objectTypeId: '0-1', name: 'marketing_email_opt_in', value: data.marketingOptIn ? 'true' : 'false' },
     // Company object — the form has a required "Company name" field (0-2/name)
     { objectTypeId: '0-2', name: 'name', value: data.businessName },
   ];
@@ -2594,7 +2594,7 @@ const App = () => {
   }, [tweaks.theme, tweaks.accent]);
 
   // Load cached answers on mount
-  const [data, setData] = useState(() => ({ ...DEFAULT_DATA, ...(loadCache() || {}) }));
+  const [data, setData] = useState(() => ({ ...DEFAULT_DATA, ...(loadCache() || {}), terms: false, marketingOptIn: false }));
   const set = (patch) => setData((d) => {
     const next = { ...d, ...patch };
     saveCache(next);
