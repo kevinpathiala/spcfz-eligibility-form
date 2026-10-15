@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>html,body{overflow:hidden}</style>
 
 <!--
   ============================================================================
@@ -2916,7 +2917,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   }
   new MutationObserver(send).observe(document.body, { childList: true, subtree: true, attributes: true });
   window.addEventListener('resize', send);
-  [0, 100, 300, 600, 1000].forEach((t) => setTimeout(send, t));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(send);
+  [0, 100, 300, 600, 1000, 2000, 3500].forEach((t) => setTimeout(send, t));
 })();
 
   </script>
