@@ -1108,6 +1108,8 @@
     flex-direction: column;
     overflow: hidden;
   }
+  #beehive-form .stage.is-done { min-height: 100vh; justify-content: center; }
+  #beehive-form .stage.is-done > .main { flex: 0 0 auto; }
   .card-head { margin-bottom: 16px; }
   .card-head h2 {
     font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
@@ -2737,7 +2739,7 @@ const App = () => {
   const hasCachedData = data.businessAge || data.sector || data.industry;
 
   return (
-    <div className="stage">
+    <div className={`stage ${done ? 'is-done' : ''}`}>
       {!done && stepIdx === 0 && (
         <div className="card-head">
           <h2>Check your eligibility</h2>
