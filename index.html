@@ -6,6 +6,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Beehive — Business Eligibility Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <!--
   ============================================================================
@@ -48,7 +51,7 @@
     --radius-lg: 24px;
     --radius-xl: 32px;
 
-    --font: 'Suisse Intl', 'Suisse Int\'l', "Suisse Int'l", 'Inter Tight', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
     --ease-onward: cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -141,8 +144,6 @@
     align-items: baseline;
     font-size: 12px;
     color: var(--text-faint);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     margin-bottom: 8px;
   }
   .progress-meta strong {
@@ -2404,6 +2405,16 @@ const StepContactB = ({ data, set, errors }) => {
         </span>
       </label>
       {errors.terms && <div className="tc-err">{errors.terms}</div>}
+      <label className="tc-row">
+        <input
+          type="checkbox"
+          checked={!!data.marketingOptIn}
+          onChange={(e) => set({ marketingOptIn: e.target.checked })}
+        />
+        <span className="tc-text">
+          Yes, I’d like to receive Beehive’s newsletter, funding insights and exclusive offers by email, WhatsApp and SMS. I can unsubscribe at any time.
+        </span>
+      </label>
     </>
   );
 };
@@ -2423,7 +2434,7 @@ Object.assign(window, {
 // ============================================================================
 window.HUBSPOT_CONFIG = {
   portalId: '2060720',
-  formGuid: '2e671895-4121-4572-9445-f45e0290230d',
+  formGuid: '83c9de1e-3757-4eda-aead-d1f37d75b6b4',
 };
 window.BEEHIVE_FIELD_MAP = {
   email: 'email',
@@ -2519,7 +2530,8 @@ const submitToHubSpot = async (data, result) => {
     { objectTypeId: '0-1', name: map.loanAmount, value: String(data.loanAmount) },
     { objectTypeId: '0-1', name: map.qualified, value: result.qualified ? 'Eligible' : 'Not eligible' },
     { objectTypeId: '0-1', name: 'lead_source', value: 'Marketing Inbound' },
-    { objectTypeId: '0-1', name: 'marketing_origin', value: 'Online Eligibility Calculator' },
+    { objectTypeId: '0-1', name: 'marketing_origin', value: 'SPCFZ Landing Page' },
+    { objectTypeId: '0-1', name: 'manual_email_optout', value: data.marketingOptIn ? 'true' : 'false' },
     // Company object — the form has a required "Company name" field (0-2/name)
     { objectTypeId: '0-2', name: 'name', value: data.businessName },
   ];
@@ -2558,7 +2570,7 @@ const saveCache = (data) => {
 const DEFAULT_DATA = {
   businessAge: '', sector: '', industry: '',
   revenue: 3_000_000, loanAmount: 500_000, revenueTouched: false, loanTouched: false,
-  name: '', businessName: '', email: '', phoneCode: '+971', phone: '', terms: false,
+  name: '', businessName: '', email: '', phoneCode: '+971', phone: '', terms: false, marketingOptIn: false,
 };
 
 // ============================================================================
