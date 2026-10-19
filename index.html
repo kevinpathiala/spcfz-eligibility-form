@@ -2697,7 +2697,9 @@ const App = () => {
       return handleSubmit();
     }
     if (!current.isValid()) return;
-    window.trackEvent && window.trackEvent('form_step_complete', { step: current.id, step_label: (window.STEP_LABELS && window.STEP_LABELS[current.id]) || current.id });
+    const stepParams = { step: current.id, step_label: (window.STEP_LABELS && window.STEP_LABELS[current.id]) || current.id };
+    if (current.id === 'revenue') stepParams.annual_revenue_aed = Math.round(data.revenue);
+    window.trackEvent && window.trackEvent('form_step_complete', stepParams);
     next();
   };
 
