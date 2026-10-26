@@ -2248,6 +2248,25 @@ const StepAge = ({ data, set, next }) => (
   </>
 );
 
+// ===== STEP: Office space =====
+const StepOffice = ({ data, set, next }) => (
+  <>
+    <div className="eyebrow"><span className="eyebrow-dot" />About your business</div>
+    <h1 className="q-title">What type of office space does your business have?</h1>
+    <OptionGroup
+      autoAdvance
+      onAutoAdvance={() => { window.trackEvent && window.trackEvent('form_step_complete', { step: 'office', step_label: (window.STEP_LABELS && window.STEP_LABELS.office) || 'office_space' }); next(); }}
+      value={data.officeSpace}
+      onChange={(v) => set({ officeSpace: v })}
+      options={[
+        { value: 'ejari', label: 'Office with a registered lease (Ejari)' },
+        { value: 'flexi', label: 'Flexi-desk or shared desk' },
+        { value: 'virtual', label: 'Virtual office or no dedicated space' },
+      ]}
+    />
+  </>
+);
+
 // ===== STEP: Sector + Industry =====
 const StepSectorIndustry = ({ data, set }) => {
   const industriesForSector = useMemo(
@@ -2535,6 +2554,7 @@ const submitToHubSpot = async (data, result) => {
     { objectTypeId: '0-1', name: 'lead_source', value: 'Marketing Inbound' },
     { objectTypeId: '0-1', name: 'marketing_origin', value: 'SPCFZ Landing Page' },
     { objectTypeId: '0-1', name: 'marketing_email_opt_in', value: data.marketingOptIn ? 'true' : 'false' },
+    { objectTypeId: '0-1', name: 'office_space', value: data.officeSpace || '' },
     // Company object — the form has a required "Company name" field (0-2/name)
     { objectTypeId: '0-2', name: 'name', value: data.businessName },
   ];
@@ -2572,7 +2592,7 @@ const saveCache = (data) => {
 
 const DEFAULT_DATA = {
   businessAge: '', sector: '', industry: '',
-  revenue: 3_000_000, loanAmount: 500_000, revenueTouched: false, loanTouched: false,
+  revenue: 3_000_000, loanAmount: 500_000, revenueTouched: false, loanTouched: false, officeSpace: '',
   name: '', businessName: '', email: '', phoneCode: '+971', phone: '', terms: false, marketingOptIn: false,
 };
 
@@ -2638,6 +2658,7 @@ const App = () => {
     { id: 'sector', component: StepSectorIndustry, isValid: () => !!data.sector && !!data.industry },
     { id: 'revenue', component: StepRevenue, isValid: () => !!data.revenueTouched },
     { id: 'loan', component: StepLoan, isValid: () => !!data.loanTouched },
+    { id: 'office', component: StepOffice, isValid: () => !!data.officeSpace },
     { id: 'contact', component: contactPage === 0 ? StepContactA : StepContactB, isValid: () => contactPage === 0 ? Object.keys(validateContactA(data)).length === 0 : Object.keys(validateContactB(data)).length === 0 },
   ]), [data, contactPage]);
 
@@ -2836,7 +2857,7 @@ const App = () => {
             <TweakButton onClick={() => {
               const demo = {
                 businessAge: '2+', sector: 'trading', industry: 'RETAIL',
-                revenue: 4_000_000, loanAmount: 500_000, revenueTouched: true, loanTouched: true,
+                revenue: 4_000_000, loanAmount: 500_000, revenueTouched: true, loanTouched: true, officeSpace: 'ejari',
                 name: 'Yusuf Al Rashid', businessName: 'Hive Trading LLC',
                 email: 'yusuf@hivetrading.ae', phoneCode: '+971', phone: '50 123 4567', terms: true,
               };
@@ -2958,6 +2979,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
       sector: 'sector_industry',
       revenue: 'annual_revenue',
       loan: 'funding_amount',
+      office: 'office_space',
       contact: 'contact_details',
     };
 
