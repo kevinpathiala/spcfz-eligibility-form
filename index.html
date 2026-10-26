@@ -2484,6 +2484,8 @@ const qualifyLead = (data) => {
   if (data.revenue < 2_000_000) return { qualified: false, reason: 'revenue' };
   // We don't lend to tobacco/sheesha businesses
   if (data.industry === 'TOBACCO') return { qualified: false, reason: 'industry' };
+  // Must have a dedicated office with a registered lease (Ejari)
+  if (['flexi', 'virtual'].includes(data.officeSpace)) return { qualified: false, reason: 'office' };
   return { qualified: true };
 };
 
@@ -2886,7 +2888,11 @@ const ResultScreen = ({ data, result, onRestart, onStartFresh }) => {
     ? `Based on what you've shared, your business looks like a strong fit for Beehive funding. A representative will be in touch as soon as possible to walk you through the next steps.`
     : reason === 'age'
       ? `Unfortunately, Beehive currently funds businesses that have been trading for over 2 years. Once you cross that mark, we'd love to hear from you again.`
-      : `Unfortunately, your annual revenue is below our current funding threshold of AED 2,000,000. Let's stay in touch as your business grows.`;
+      : reason === 'industry'
+        ? `Unfortunately, Beehive isn't able to fund businesses in this industry at the moment. Thank you for your interest.`
+        : reason === 'office'
+          ? `Unfortunately, Beehive currently funds businesses with a dedicated office under a registered lease (Ejari). Once you have one in place, we'd love to hear from you again.`
+          : `Unfortunately, your annual revenue is below our current funding threshold of AED 2,000,000. Let's stay in touch as your business grows.`;
 
   return (
     <div className="result">
